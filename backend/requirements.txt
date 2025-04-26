@@ -1,0 +1,10 @@
+fastapi==0.104.0
+uvicorn==0.23.2
+python-multipart==0.0.6
+pydantic==2.4.2
+clerk-python==0.1.1  # Clerk SDK for Python
+opencv-python==4.8.1.78  # For CT scan image processing
+torch==2.1.0  # For ML models
+numpy==1.26.0
+python-jose==3.3.0  # For JWT handling
+httpx==0.25.0  # HTTP client for async requests 
