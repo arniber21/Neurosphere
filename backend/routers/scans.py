@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, Path, Query, HTTPException
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
+from datetime import datetime
 
 router = APIRouter()
 
@@ -22,9 +23,25 @@ async def upload_scan(
     """
     # TODO: Implement file upload, validation, and processing
     
+    # inside of our Snoflake database, let's assign each 
+
+    # ensure the file type is a valid CT scan file
+    # call the ML processing model
+    createdAt = datatime.now().isoformat()
+
     # Placeholder response for scaffolding
+    # idea is to have a large database of users and for each user they have the following parameters
+    # 
+
+    """ 
+    - image_id
+    - status
+    - createdAt    
+    """
+
     return {
-        "scanId": "scan_123",
+
+        "image_id": "scan_123",
         "status": "processing",
         "createdAt": "2023-07-01T12:00:00Z",
         "estimatedCompletionTime": "2023-07-01T12:05:00Z"
@@ -94,6 +111,8 @@ async def check_scan_status(scan_id: str = Path(..., description="The ID of the 
     Check the current processing status of a scan.
     """
     # TODO: Implement status checking
+
+    # simply query from the mongodb cluster for the data
     
     # Placeholder response for scaffolding
     return {
