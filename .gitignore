@@ -6,4 +6,4 @@ neurosphere/node_modules/
 neurosphere/.react-router/
 neurosphere/build/
 
-venv/
+neurosphere/venv/
