@@ -1,0 +1,149 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router'
+import { useUser } from '@clerk/clerk-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { DashboardLayout } from '../components/layout/dashboard-layout'
+
+type ScanSummary = {
+  id: string
+  date: string
+  status: 'completed' | 'processing' | 'failed'
+  tumorDetected: boolean
+}
+
+export default function Dashboard() {
+  const { user } = useUser()
+  const [recentScans, setRecentScans] = useState<ScanSummary[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate API call to fetch recent scans
+    setTimeout(() => {
+      // Mock data
+      setRecentScans([
+        { id: '1', date: '2023-06-15', status: 'completed', tumorDetected: true },
+        { id: '2', date: '2023-05-22', status: 'completed', tumorDetected: false },
+        { id: '3', date: '2023-04-10', status: 'completed', tumorDetected: true },
+      ])
+      setIsLoading(false)
+    }, 1000)
+  }, [])
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName}!</h1>
+          <p className="text-muted-foreground mt-2">
+            Here's an overview of your brain scan analysis and recent activity.
+          </p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Scans</CardTitle>
+              <CardDescription>Lifetime processed scans</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">12</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                +2 from last month
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Detected Issues</CardTitle>
+              <CardDescription>Scans with tumors detected</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">4</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                33% of total scans
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Last Scan</CardTitle>
+              <CardDescription>Most recent analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">June 15</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                2 weeks ago
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="col-span-1">
+            <CardHeader>
+              <CardTitle>Recent Scans</CardTitle>
+              <CardDescription>Your latest brain scan analyses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center p-4">Loading recent scans...</div>
+              ) : (
+                <div className="space-y-4">
+                  {recentScans.map((scan) => (
+                    <div key={scan.id} className="flex items-center justify-between border-b pb-4">
+                      <div>
+                        <p className="font-medium">{new Date(scan.date).toLocaleDateString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Status: <span className="capitalize">{scan.status}</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Result: {scan.tumorDetected ? 'Tumor detected' : 'No tumor detected'}
+                        </p>
+                      </div>
+                      <Link to={`/scans/${scan.id}`}>
+                        <Button variant="outline" size="sm">View</Button>
+                      </Link>
+                    </div>
+                  ))}
+                  
+                  <div className="pt-2 text-center">
+                    <Link to="/scans">
+                      <Button variant="ghost">View all scans</Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-1">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Common tasks and shortcuts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Link to="/upload" className="block">
+                  <Button className="w-full">Upload New CT Scan</Button>
+                </Link>
+                
+                <Link to="/scans" className="block">
+                  <Button variant="outline" className="w-full">View Scan History</Button>
+                </Link>
+                
+                {recentScans.length > 0 && (
+                  <Link to={`/scans/${recentScans[0].id}`} className="block">
+                    <Button variant="outline" className="w-full">View Latest Result</Button>
+                  </Link>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </DashboardLayout>
+  )
+} 

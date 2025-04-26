@@ -1,0 +1,8 @@
+neurosphere/.env
+neurosphere/.DS_Store
+neurosphere/node_modules/
+
+# React Router
+neurosphere/.react-router/
+neurosphere/build/
+
