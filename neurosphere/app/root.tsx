@@ -4,6 +4,8 @@ import { ClerkProvider } from '@clerk/clerk-react'
 import type { Route } from './+types/root'
 import './app.css'
 
+const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+
 export const meta: Route.Meta = () => {
 	return [
 		{ title: 'Neurosphere - Brain Tumor Analysis' },
@@ -48,7 +50,7 @@ export function ErrorBoundary() {
 
 export default function Root() {
 	return (
-		<ClerkProvider publishableKey="pk_test_your-test-key">
+		<ClerkProvider publishableKey={publishableKey}>
 			<Document>
 				<Outlet />
 			</Document>
