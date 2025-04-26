@@ -7,4 +7,5 @@ opencv-python==4.8.1.78  # For CT scan image processing
 torch==2.1.0  # For ML models
 numpy==1.26.0
 python-jose==3.3.0  # For JWT handling
-httpx==0.25.0  # HTTP client for async requests 
+httpx==0.25.0  # HTTP client for async requests
+python-dotenv==1.0.0  # For loading environment variables 
