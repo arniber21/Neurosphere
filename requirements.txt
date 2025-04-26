@@ -1,0 +1,10 @@
+numpy
+pandas
+build
+cffi
+opencv-python
+numpy
+streamlit
+snowflake-connector-python
+sseclient
+requests
