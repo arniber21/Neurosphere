@@ -11,7 +11,8 @@ async def get_user_stats() -> Dict[str, Any]:
     Returns metrics like total scans, tumors detected, and other important user statistics.
     """
     # TODO: Implement user statistics retrieval
-    
+
+
     # Placeholder response for scaffolding
     return {
         "totalScans": 12,

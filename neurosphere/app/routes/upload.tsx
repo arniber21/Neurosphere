@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router'
 import { DashboardLayout } from '../components/layout/dashboard-layout'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card'
+import { uploadScan } from '../lib/api'
+import { useAuth } from '../lib/auth'
 
 export default function Upload() {
   const navigate = useNavigate()
+  const { token, isLoaded: isAuthLoaded } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -67,27 +70,48 @@ export default function Upload() {
   }
 
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!selectedFile || !isAuthLoaded || !token) return
     
     setIsUploading(true)
     setUploadProgress(0)
+    setError(null)
     
-    // Simulate upload process with progress
-    const totalSteps = 10
-    for (let i = 1; i <= totalSteps; i++) {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setUploadProgress(Math.round((i / totalSteps) * 100))
+    // Simulate initial upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval)
+          return prev
+        }
+        return prev + 10
+      })
+    }, 500)
+    
+    try {
+      // Add any additional metadata you want to send with the scan
+      const metadata = {
+        uploadDate: new Date().toISOString(),
+        fileType: selectedFile.type,
+        fileName: selectedFile.name
+      }
+      
+      // Upload the scan to the backend
+      const response = await uploadScan(token, selectedFile, metadata)
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+      
+      if (response && response.id) {
+        // Navigate to the scan detail page
+        navigate(`/scans/${response.id}`)
+      } else {
+        throw new Error('Invalid response from server')
+      }
+    } catch (err) {
+      clearInterval(progressInterval)
+      setError(err instanceof Error ? err.message : 'Failed to upload scan. Please try again.')
+      setIsUploading(false)
+      console.error('Upload error:', err)
     }
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Simulate successful upload and processing
-    // In a real app, this would call your backend API
-    setIsUploading(false)
-    
-    // Navigate to a simulated result page
-    navigate('/scans/new-result')
   }
 
   return (
@@ -224,7 +248,7 @@ export default function Upload() {
           <CardFooter>
             <Button 
               className="w-full"
-              disabled={!selectedFile || isUploading}
+              disabled={!selectedFile || isUploading || !isAuthLoaded}
               onClick={handleUpload}
             >
               {isUploading ? 'Processing...' : 'Analyze CT Scan'}
