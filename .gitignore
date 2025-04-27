@@ -9,4 +9,4 @@ neurosphere/build/
 # Backend
 backend/.env
 
-venv/
+/venv/

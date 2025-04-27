@@ -1,9 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Form, Path, Query, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, Path, Query, HTTPException, Depends
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 from datetime import datetime
 
 router = APIRouter()
+get_current_user = get_user_dependency()
 
 class VisualizationOptions(BaseModel):
     quality: str = "high"
@@ -13,7 +14,8 @@ class VisualizationOptions(BaseModel):
 @router.post("/upload")
 async def upload_scan(
     file: UploadFile = File(...),
-    metadata: Optional[str] = Form(None)
+    metadata: Optional[str] = Form(None),
+    user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
     Upload a new CT scan for processing.
@@ -44,19 +46,22 @@ async def upload_scan(
         "image_id": "scan_123",
         "status": "processing",
         "createdAt": "2023-07-01T12:00:00Z",
-        "estimatedCompletionTime": "2023-07-01T12:05:00Z"
+        "estimatedCompletionTime": "2023-07-01T12:05:00Z",
+        "userId": user["userId"]  # Add user ID to associate scan with user
     }
 
 @router.get("")
 async def get_scans(
     status: Optional[str] = Query(None, description="Filter by status (e.g., 'completed', 'processing')"),
     page: int = Query(1, description="Page number"),
-    limit: int = Query(10, description="Results per page")
+    limit: int = Query(10, description="Results per page"),
+    user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
     Retrieve a list of user's scans with optional filtering and pagination.
     """
     # TODO: Implement scan retrieval with filters and pagination
+    # You can use user["userId"] to filter scans for the current user
     
     # Placeholder response for scaffolding
     return {
@@ -83,11 +88,15 @@ async def get_scans(
     }
 
 @router.get("/{scan_id}")
-async def get_scan_details(scan_id: str = Path(..., description="The ID of the scan")) -> Dict[str, Any]:
+async def get_scan_details(
+    scan_id: str = Path(..., description="The ID of the scan"),
+    user: Dict = Depends(get_current_user)
+) -> Dict[str, Any]:
     """
     Retrieve detailed information about a specific scan.
     """
     # TODO: Implement scan details retrieval
+    # You can use user["userId"] to verify the user has access to this scan
     
     # Placeholder response for scaffolding
     return {
@@ -106,13 +115,15 @@ async def get_scan_details(scan_id: str = Path(..., description="The ID of the s
     }
 
 @router.get("/{scan_id}/status")
-async def check_scan_status(scan_id: str = Path(..., description="The ID of the scan")) -> Dict[str, Any]:
+async def check_scan_status(
+    scan_id: str = Path(..., description="The ID of the scan"),
+    user: Dict = Depends(get_current_user)
+) -> Dict[str, Any]:
     """
     Check the current processing status of a scan.
     """
     # TODO: Implement status checking
-
-    # simply query from the mongodb cluster for the data
+    # You can use user["userId"] to verify the user has access to this scan
     
     # Placeholder response for scaffolding
     return {
@@ -126,12 +137,14 @@ async def check_scan_status(scan_id: str = Path(..., description="The ID of the 
 @router.post("/{scan_id}/visualize")
 async def generate_3d_model(
     options: VisualizationOptions,
-    scan_id: str = Path(..., description="The ID of the scan")
+    scan_id: str = Path(..., description="The ID of the scan"),
+    user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
     Trigger or regenerate the 3D visualization for a scan.
     """
     # TODO: Implement 3D model generation
+    # You can use user["userId"] to verify the user has access to this scan
     
     # Placeholder response for scaffolding
     return {
