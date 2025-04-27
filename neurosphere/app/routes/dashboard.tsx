@@ -41,40 +41,52 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="group border border-gray-300 transition-all duration-200 hover:scale-105 hover:border-pink-500">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Scans</CardTitle>
-              <CardDescription>Lifetime processed scans</CardDescription>
+              <CardTitle className="text-sm font-medium group-hover:text-pink-500">
+                Total Scans
+              </CardTitle>
+              <CardDescription className="group-hover:text-pink-500">
+                Lifetime processed scans
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-3xl font-bold group-hover:text-pink-500">12</div>
+              <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
                 +2 from last month
               </p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="group border border-gray-300 transition-all duration-200 hover:scale-105 hover:border-pink-500">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Detected Issues</CardTitle>
-              <CardDescription>Scans with tumors detected</CardDescription>
+              <CardTitle className="text-sm font-medium group-hover:text-pink-500">
+                Detected Issues
+              </CardTitle>
+              <CardDescription className="group-hover:text-pink-500">
+                Scans with tumors detected
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">4</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-3xl font-bold group-hover:text-pink-500">4</div>
+              <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
                 33% of total scans
               </p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="group border border-gray-300 transition-all duration-200 hover:scale-105 hover:border-pink-500">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Last Scan</CardTitle>
-              <CardDescription>Most recent analysis</CardDescription>
+              <CardTitle className="text-sm font-medium group-hover:text-pink-500">
+                Last Scan
+              </CardTitle>
+              <CardDescription className="group-hover:text-pink-500">
+                Most recent analysis
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">June 15</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-3xl font-bold group-hover:text-pink-500">June 15</div>
+              <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
                 2 weeks ago
               </p>
             </CardContent>
