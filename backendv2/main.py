@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from pymongo.mongo_client import MongoClient
+from routes.route import router
+
 import os
 
 app = FastAPI()
@@ -16,17 +18,15 @@ try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
 except Exception as e:
-    print(os.getenv("MONGO_USERNAME"))
-    print(os.getenv("MONGO_PASSWORD"))
-
+    # print(os.getenv("MONGO_USERNAME"))
+    # print(os.getenv("MONGO_PASSWORD"))
     print(e)
 
 # Your API routes go here...
 
-
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
+@app.get("/")
+async def root():
+    return {"message": "meow"}
 
 # @app.get("/users/{user_id}}")
 # async def process_info(user_id):
