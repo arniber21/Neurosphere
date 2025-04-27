@@ -92,7 +92,7 @@ def process_scan_task(scan_id: str):
         "location": "Frontal lobe",
         "size": "2.3cm",
         "notes": "Tumor detected in the frontal lobe region.",
-        "thumbnailUrl": f"/thumbnails/{scan_id}.jpg",
+        "thumbnailUrl": f"/uploads/{scan_id}.jpg",
         "updatedAt": datetime.utcnow()
     }
     scans_collection.update_one({"_id": scan_id}, {"$set": {"status": "completed", **result, "progress": 100, "stage": "completed"}})
@@ -171,6 +171,7 @@ def list_scans(
 @app.get("/api/scans/{scan_id}")
 def get_scan_details(scan_id: str):
     # no authentication: fetch by id only
+    print("reached")
     doc = scans_collection.find_one({"_id": scan_id})
     if not doc:
         raise HTTPException(status_code=404, detail="Scan not found")
@@ -182,7 +183,8 @@ def get_scan_details(scan_id: str):
         "location": doc.get("location"),
         "size": doc.get("size"),
         "notes": doc.get("notes"),
-        "visualizationUrl": doc.get("visualizationId") and f"/api/visualizations/{doc.get('visualizationId')}",
+        # "visualizationUrl": doc.get("visualizationId") and f"/api/visualizations/{doc.get('visualizationId')}",
+        "visualizationUrl": f"/api/visualizations/cells_in_primary_visual_cortex.html",
         "originalImageUrl": doc.get("file_url"),
         "doctor": doc.get("doctor"),
         "createdAt": doc["created_at"].isoformat() + "Z",
@@ -252,9 +254,11 @@ def generate_visualization(
 def get_visualization(viz_id: str):
     # no authentication: fetch by id only
     doc = visualizations_collection.find_one({"_id": viz_id})
-    if not doc or doc["status"] != "completed":
-        raise HTTPException(status_code=404, detail="Visualization not ready")
+    # if not doc or doc["status"] != "completed":
+    #    raise HTTPException(status_code=404, detail="Visualization not ready")
     html_path = os.path.join("visualizations_html", f"{viz_id}.html")
+    html_path = os.path.join("visualizations_html", "cells_in_primary_visual_cortex.html")
+    print("reached")
     if not os.path.exists(html_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(html_path, media_type="text/html")

@@ -255,6 +255,7 @@ export default function ScanDetail() {
                       className="w-full h-full border-0" 
                       title="K3D Brain Visualization"
                     />
+                    hi meow
                   </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-center bg-muted/50">
