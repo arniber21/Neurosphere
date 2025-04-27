@@ -116,14 +116,30 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <Link to={`/scans/${scan.id}`}>
-                        <Button variant="outline" size="sm">View</Button>
+                        <Button variant="outline" size="sm" className="relative overflow-hidden group">
+                          <span className="relative z-10 transition-colors duration-500 group-hover:text-white">
+                            View
+                          </span>
+                          <span
+                            className="absolute inset-0 bg-pink-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                            aria-hidden="true"
+                          ></span>
+                        </Button>
                       </Link>
                     </div>
                   ))}
                   
                   <div className="pt-2 text-center">
                     <Link to="/scans">
-                      <Button variant="ghost">View all scans</Button>
+                      <Button variant="ghost" className="relative overflow-hidden inline-block group">
+                        <span className="relative z-10 transition-colors duration-500 group-hover:text-white">
+                          View all scans
+                        </span>
+                        <span
+                          className="absolute inset-0 bg-pink-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                          aria-hidden="true"
+                        ></span>
+                      </Button>
                     </Link>
                   </div>
                 </div>
@@ -139,16 +155,40 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-4">
                 <Link to="/upload" className="block">
-                  <Button className="w-full">Upload New CT Scan</Button>
+                  <Button className="w-full relative overflow-hidden group">
+                    <span className="relative z-10 transition-colors duration-500 group-hover:text-white">
+                      Upload New CT Scan
+                    </span>
+                    <span
+                      className="absolute inset-0 bg-pink-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                      aria-hidden="true"
+                    ></span>
+                  </Button>
                 </Link>
                 
                 <Link to="/scans" className="block">
-                  <Button variant="outline" className="w-full">View Scan History</Button>
+                  <Button variant="outline" className="w-full relative overflow-hidden group">
+                    <span className="relative z-10 transition-colors duration-500 group-hover:text-white">
+                      View Scan History
+                    </span>
+                    <span
+                      className="absolute inset-0 bg-pink-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                      aria-hidden="true"
+                    ></span>
+                  </Button>
                 </Link>
                 
                 {recentScans.length > 0 && (
                   <Link to={`/scans/${recentScans[0].id}`} className="block">
-                    <Button variant="outline" className="w-full">View Latest Result</Button>
+                    <Button variant="outline" className="w-full relative overflow-hidden group">
+                      <span className="relative z-10 transition-colors duration-500 group-hover:text-white">
+                        View Latest Result
+                      </span>
+                      <span
+                        className="absolute inset-0 bg-pink-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"
+                        aria-hidden="true"
+                      ></span>
+                    </Button>
                   </Link>
                 )}
               </div>
