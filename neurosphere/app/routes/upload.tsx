@@ -70,7 +70,7 @@ export default function Upload() {
   }
 
   const handleUpload = async () => {
-    if (!selectedFile || !isAuthLoaded) return
+    if (!selectedFile || !isAuthLoaded || !token) return
     
     setIsUploading(true)
     setUploadProgress(0)

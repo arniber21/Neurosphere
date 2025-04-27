@@ -2,7 +2,9 @@
  * API service for interacting with the Neurosphere backend
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+// When using the proxy in vite.config.ts, we can use relative URLs
+// which will be proxied to the backend server
+const API_BASE_URL = '';
 
 /**
  * Generic fetch wrapper with authentication
@@ -15,18 +17,23 @@ async function fetchWithAuth(endpoint: string, token: string | null, options: Re
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-    credentials: 'include' // Include cookies for cross-origin requests if needed
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+      credentials: 'include' // Include cookies for cross-origin requests if needed
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `API Error: ${response.status}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: `API Error: ${response.status}` }));
+      throw new Error(error.message || `API Error: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('API request failed:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 /**
@@ -66,20 +73,25 @@ export async function uploadScan(token: string | null, file: File, metadata?: Re
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/scans/upload`, {
-    method: 'POST',
-    // Don't set Content-Type when using FormData - browser will set it with boundary
-    headers,
-    body: formData,
-    credentials: 'include'
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `Upload Error: ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/scans/upload`, {
+      method: 'POST',
+      // Don't set Content-Type when using FormData - browser will set it with boundary
+      headers,
+      body: formData,
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: `Upload Error: ${response.status}` }));
+      throw new Error(error.message || `Upload Error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Upload failed:', error);
+    throw error;
   }
-  
-  return response.json();
 }
 
 /**
@@ -108,4 +120,11 @@ export async function generateVisualization(token: string | null, scanId: string
     method: 'POST',
     body: JSON.stringify(options || {}),
   });
+}
+
+/**
+ * Check API health
+ */
+export async function checkApiHealth() {
+  return fetchWithAuth('/api/health', null);
 } 
