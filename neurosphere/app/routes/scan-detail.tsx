@@ -15,6 +15,7 @@ type ScanDetail = {
   visualizationUrl?: string
   notes?: string
   originalImageUrl?: string
+  heatmapUrl?: string
 }
 
 export default function ScanDetail() {
@@ -67,7 +68,8 @@ export default function ScanDetail() {
         size: data.size,
         visualizationUrl: data.visualizationUrl,
         notes: data.notes,
-        originalImageUrl: data.originalImageUrl
+        originalImageUrl: data.originalImageUrl,
+        heatmapUrl: data.heatmapUrl
       })
     } catch (err) {
       console.error('Failed to fetch scan details:', err)
@@ -201,6 +203,20 @@ export default function ScanDetail() {
                     />
                   </div>
                 )}
+                
+                {scan.heatmapUrl && (
+                  <div className="space-y-1 mt-4">
+                    <p className="text-sm font-medium text-muted-foreground">Tumor Heatmap</p>
+                    <img 
+                      src={`${scan.heatmapUrl}`} 
+                      alt="Tumor heatmap" 
+                      className="w-full h-auto rounded-md border"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      AI-generated heatmap highlighting potential tumor regions
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -246,19 +262,18 @@ export default function ScanDetail() {
                 <CardTitle>3D Brain Visualization</CardTitle>
                 <CardDescription>Interactive 3D model with tumor location</CardDescription>
               </CardHeader>
-              <CardContent className="p-0 h-full flex flex-col">
+              <CardContent className="p-0 aspect-[4/3] md:aspect-auto md:flex-1">
                 {scan.visualizationUrl ? (
-                  <div className="w-full flex-1 min-h-[500px]">
+                  <div className="w-full h-full min-h-[500px]">
                     <iframe 
                       ref={iframeRef}
                       src={scan.visualizationUrl} 
                       className="w-full h-full border-0" 
                       title="K3D Brain Visualization"
                     />
-                    hi meow
                   </div>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center bg-muted/50">
+                  <div className="flex items-center justify-center h-full min-h-[500px] bg-muted/50">
                     <div className="text-center">
                       <p className="text-muted-foreground">
                         {scan.status === 'processing' 
