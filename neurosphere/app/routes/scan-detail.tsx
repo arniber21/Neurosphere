@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router'
 import { DashboardLayout } from '../components/layout/dashboard-layout'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { getScanDetails, getScanStatus } from '../lib/api'
 
 type ScanDetail = {
   id: string
@@ -13,45 +14,72 @@ type ScanDetail = {
   size?: string
   visualizationUrl?: string
   notes?: string
+  originalImageUrl?: string
 }
 
 export default function ScanDetail() {
   const params = useParams()
   const [scan, setScan] = useState<ScanDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
-
+  const scanId = params.id
+  
+  // Poll for status updates when the scan is processing
   useEffect(() => {
-    // Simulate API call to fetch scan details
-    setTimeout(() => {
-      // Check if this is a new result page from upload
-      if (params.id === 'new-result') {
-        setScan({
-          id: 'new',
-          date: new Date().toISOString(),
-          status: 'completed',
-          tumorDetected: true,
-          location: 'Frontal lobe',
-          size: '1.8cm',
-          visualizationUrl: '/display.html',
-          notes: 'New scan uploaded and processed successfully. Tumor detected in the frontal lobe region.'
-        })
-      } else {
-        // Mock data for existing scan
-        setScan({
-          id: params.id || '1',
-          date: '2023-06-15',
-          status: 'completed',
-          tumorDetected: true,
-          location: 'Frontal lobe',
-          size: '2.3cm',
-          visualizationUrl: '/display.html',
-          notes: 'Tumor detected in the frontal lobe region. Recommended for additional clinical evaluation.'
-        })
-      }
+    let intervalId: number | undefined
+    
+    if (scan?.status === 'processing') {
+      intervalId = window.setInterval(async () => {
+        try {
+          const statusData = await getScanStatus(null, scan.id)
+          if (statusData.status !== 'processing') {
+            // If status changed from processing, fetch full details
+            fetchScanDetails()
+            clearInterval(intervalId)
+          }
+        } catch (err) {
+          console.error('Failed to check scan status:', err)
+        }
+      }, 3000) // Poll every 3 seconds
+    }
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [scan?.status, scan?.id])
+  
+  const fetchScanDetails = async () => {
+    if (!scanId) return
+    
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const data = await getScanDetails(null, scanId)
+      
+      setScan({
+        id: data.id,
+        date: data.date,
+        status: data.status,
+        tumorDetected: data.tumorDetected,
+        location: data.location,
+        size: data.size,
+        visualizationUrl: data.visualizationUrl,
+        notes: data.notes,
+        originalImageUrl: data.originalImageUrl
+      })
+    } catch (err) {
+      console.error('Failed to fetch scan details:', err)
+      setError('Failed to load scan details. Please try again.')
+    } finally {
       setIsLoading(false)
-    }, 1000)
-  }, [params.id])
+    }
+  }
+  
+  useEffect(() => {
+    fetchScanDetails()
+  }, [scanId])
 
   if (isLoading) {
     return (
@@ -60,6 +88,20 @@ export default function ScanDetail() {
           <div className="text-center">
             <div className="text-lg font-medium">Loading scan details...</div>
           </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+  
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Error</h2>
+          <p className="text-muted-foreground mt-2">{error}</p>
+          <Link to="/scans">
+            <Button className="mt-4">Back to Scans</Button>
+          </Link>
         </div>
       </DashboardLayout>
     )
@@ -148,6 +190,17 @@ export default function ScanDetail() {
                     <p className="text-sm">{scan.notes}</p>
                   </div>
                 )}
+                
+                {scan.originalImageUrl && (
+                  <div className="space-y-1 mt-4">
+                    <p className="text-sm font-medium text-muted-foreground">Original Scan</p>
+                    <img 
+                      src={scan.originalImageUrl} 
+                      alt="Original scan" 
+                      className="w-full h-auto rounded-md border"
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -206,7 +259,11 @@ export default function ScanDetail() {
                 ) : (
                   <div className="flex-1 flex items-center justify-center bg-muted/50">
                     <div className="text-center">
-                      <p className="text-muted-foreground">3D visualization not available</p>
+                      <p className="text-muted-foreground">
+                        {scan.status === 'processing' 
+                          ? 'Visualization is being generated...' 
+                          : '3D visualization not available'}
+                      </p>
                     </div>
                   </div>
                 )}
