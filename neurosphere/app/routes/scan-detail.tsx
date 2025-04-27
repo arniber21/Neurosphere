@@ -246,9 +246,9 @@ export default function ScanDetail() {
                 <CardTitle>3D Brain Visualization</CardTitle>
                 <CardDescription>Interactive 3D model with tumor location</CardDescription>
               </CardHeader>
-              <CardContent className="p-0 aspect-[4/3] md:aspect-auto md:flex-1">
+              <CardContent className="p-0 h-full flex flex-col">
                 {scan.visualizationUrl ? (
-                  <div className="w-full h-full min-h-[500px]">
+                  <div className="w-full flex-1 min-h-[500px]">
                     <iframe 
                       ref={iframeRef}
                       src={scan.visualizationUrl} 
@@ -257,7 +257,7 @@ export default function ScanDetail() {
                     />
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full min-h-[500px] bg-muted/50">
+                  <div className="flex-1 flex items-center justify-center bg-muted/50">
                     <div className="text-center">
                       <p className="text-muted-foreground">
                         {scan.status === 'processing' 
