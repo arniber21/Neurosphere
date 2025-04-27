@@ -24,6 +24,38 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Helper function to format date in a human-friendly way
+  const formatDateHumanFriendly = (dateString: string) => {
+    const date = new Date(dateString);
+    
+    // Array of month names
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June', 
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    // Get day with ordinal suffix
+    const day = date.getDate();
+    const suffix = getDaySuffix(day);
+    
+    // Get month and year
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${month} ${day}${suffix}, ${year}`;
+  }
+  
+  // Helper to get ordinal suffix for day (1st, 2nd, 3rd, etc.)
+  const getDaySuffix = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  }
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -87,9 +119,9 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold group-hover:text-pink-500">12</div>
+              <div className="text-3xl font-bold group-hover:text-pink-500">{stats?.totalScans || 0}</div>
               <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
-                +2 from last month
+                {stats?.processingScans ? `${stats.processingScans} currently processing` : 'No scans in progress'}
               </p>
             </CardContent>
           </Card>
@@ -104,9 +136,9 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold group-hover:text-pink-500">4</div>
+              <div className="text-3xl font-bold group-hover:text-pink-500">{stats?.tumorDetectedCount || 0}</div>
               <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
-                33% of total scans
+                {stats ? `${Math.round(stats.tumorDetectionRate * 100)}% of total scans` : 'No data available'}
               </p>
             </CardContent>
           </Card>
@@ -121,10 +153,23 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold group-hover:text-pink-500">June 15</div>
-              <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
-                2 weeks ago
-              </p>
+              {stats?.recentScans && stats.recentScans.length > 0 ? (
+                <>
+                  <div className="text-3xl font-bold group-hover:text-pink-500">
+                    {formatDateHumanFriendly(stats.recentScans[0].date)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
+                    {new Date(stats.recentScans[0].date).toLocaleTimeString()}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-3xl font-bold group-hover:text-pink-500">No scans</div>
+                  <p className="text-xs text-muted-foreground mt-1 group-hover:text-pink-500">
+                    Upload your first scan
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -144,7 +189,7 @@ export default function Dashboard() {
                     <div key={scan.id} className="flex items-center justify-between border-b pb-2">
                       <div className="flex flex-col">
                         <div className="flex gap-2 items-center">
-                          <span className="font-medium">{new Date(scan.date).toLocaleDateString()}</span>
+                          <span className="font-medium">{formatDateHumanFriendly(scan.date)}</span>
                           <span 
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               scan.status === 'completed' 

@@ -100,9 +100,9 @@ export default function Upload() {
       clearInterval(progressInterval)
       setUploadProgress(100)
       
-      if (response && response.id) {
+      if (response && response.scanId) {
         // Navigate to the scan detail page
-        navigate(`/scans/${response.id}`)
+        navigate(`/scans/${response.scanId}`)
       } else {
         throw new Error('Invalid response from server')
       }
