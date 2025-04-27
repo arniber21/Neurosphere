@@ -79,6 +79,27 @@ def get_cam_overlay(image_path):
     )
     model.load_state_dict(torch.load('resnet18_finetuned.pth'))
 
+    # Load the original image for visualization
+    original_image = cv2.imread(image_path)
+    original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
+    original_image = cv2.resize(original_image, (224, 224))
+
+    # Check if tumor actually exists
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    model.eval()
+
+    img = Image.open(img_path).convert('RGB')
+    img = test_transform(img).unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        outputs = model(img)
+        _, predicted = torch.max(outputs, 1)
+
+    # Do not add overlay if no tumor is detected
+    if predicted.item() == 0:
+        return original_image
+
     # Select target layer in neural network for Grad CAM
     target_layer = model.layer4[-1]  # Replace with the correct target layer
 
@@ -91,11 +112,7 @@ def get_cam_overlay(image_path):
     # Generate Grad-CAM
     cam = grad_cam.generate_cam(input_tensor)
 
-    # Load the original image for visualization
-    original_image = cv2.imread(image_path)
-    original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
-    original_image = cv2.resize(original_image, (224, 224))
-
     # Overlay CAM on the image
     overlay = overlay_cam_on_image(original_image / 255.0, cam)
+    
     return overlay
