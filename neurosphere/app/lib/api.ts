@@ -127,4 +127,36 @@ export async function generateVisualization(token: string | null, scanId: string
  */
 export async function checkApiHealth() {
   return fetchWithAuth('/api/health', null);
+}
+
+/**
+ * Generate a heatmap for an existing scan based on its original image
+ */
+export async function generateHeatmap(token: string | null, imageFile: File) {
+  const formData = new FormData();
+  formData.append('file', imageFile);
+  
+  const headers: HeadersInit = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/mri/heatmap`, {
+      method: 'POST',
+      headers,
+      body: formData,
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: `Heatmap Error: ${response.status}` }));
+      throw new Error(error.message || `Heatmap Error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Heatmap generation failed:', error);
+    throw error;
+  }
 } 

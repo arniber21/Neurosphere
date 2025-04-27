@@ -118,17 +118,17 @@ export default function Upload() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Upload CT Scan</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Upload MRI Scan</h1>
           <p className="text-muted-foreground mt-2">
-            Upload a brain CT scan for tumor detection and 3D visualization
+            Upload a brain MRI scan for tumor detection and 3D visualization
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>CT Scan Upload</CardTitle>
+            <CardTitle>MRI Scan Upload</CardTitle>
             <CardDescription>
-              Upload a CT scan image to analyze for potential brain tumors
+              Upload a MRI scan image to analyze for potential brain tumors
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -136,7 +136,7 @@ export default function Upload() {
               {isUploading ? (
                 <div className="space-y-4">
                   <div className="text-center">
-                    <h3 className="text-lg font-medium">Processing CT Scan</h3>
+                    <h3 className="text-lg font-medium">Processing MRI Scan</h3>
                     <p className="text-muted-foreground">
                       Please wait while we analyze your brain scan
                     </p>
@@ -180,7 +180,7 @@ export default function Upload() {
                       <div className="relative mx-auto overflow-hidden rounded-lg max-w-sm">
                         <img
                           src={previewUrl}
-                          alt="CT Scan Preview"
+                          alt="MRI Scan Preview"
                           className="w-full h-auto object-cover"
                         />
                       </div>
@@ -207,7 +207,7 @@ export default function Upload() {
                       </div>
                       <div>
                         <p className="text-base font-medium">
-                          Drag and drop your CT scan here
+                          Drag and drop your MRI scan here
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
                           or
@@ -237,7 +237,7 @@ export default function Upload() {
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">What happens next?</h3>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>Your CT scan will be securely uploaded to our servers</li>
+                  <li>Your MRI scan will be securely uploaded to our servers</li>
                   <li>Our AI model will analyze the image to detect potential tumors</li>
                   <li>A 3D model of your brain will be generated, highlighting any findings</li>
                   <li>You'll be able to interactively explore the 3D visualization</li>
@@ -251,7 +251,7 @@ export default function Upload() {
               disabled={!selectedFile || isUploading || !isAuthLoaded}
               onClick={handleUpload}
             >
-              {isUploading ? 'Processing...' : 'Analyze CT Scan'}
+              {isUploading ? 'Processing...' : 'Analyze MRI Scan'}
             </Button>
           </CardFooter>
         </Card>

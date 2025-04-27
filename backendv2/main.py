@@ -11,6 +11,11 @@ from typing import Optional
 import httpx
 from clerk_backend_api import Clerk
 from clerk_backend_api.jwks_helpers import authenticate_request, AuthenticateRequestOptions
+import cv2
+import numpy as np
+
+# Import the GradCam functionality
+from ml.GradCam import get_cam_overlay
 
 # Initialize FastAPI
 app = FastAPI()
@@ -43,10 +48,12 @@ visualizations_collection = db.visualizations
 os.makedirs("uploads", exist_ok=True)
 os.makedirs("thumbnails", exist_ok=True)
 os.makedirs("visualizations_html", exist_ok=True)
+os.makedirs("heatmaps", exist_ok=True)  # Add directory for heatmaps
 
 # Serve static files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/thumbnails", StaticFiles(directory="thumbnails"), name="thumbnails")
+app.mount("/heatmaps", StaticFiles(directory="heatmaps"), name="heatmaps")
 
 # Helper function to format responses with proper headers
 def create_json_response(content, status_code=200):
@@ -80,24 +87,75 @@ def get_current_user(request: Request):
 async def api_validate_user():
     return create_json_response({"isAuthenticated": True, "userId": None, "permissions": []})
 
-# Background task: process CT scan
-def process_scan_task(scan_id: str):
-    stages = [("uploading", 10), ("processing", 50), ("building_3d_model", 75)]
-    for stage, progress in stages:
-        scans_collection.update_one({"_id": scan_id}, {"$set": {"stage": stage, "progress": progress}})
-        import time; time.sleep(1)
-    # Finalize scan
-    result = {
-        "tumorDetected": True,
-        "location": "Frontal lobe",
-        "size": "2.3cm",
-        "notes": "Tumor detected in the frontal lobe region.",
-        "thumbnailUrl": f"/thumbnails/{scan_id}.jpg",
-        "updatedAt": datetime.utcnow()
-    }
-    scans_collection.update_one({"_id": scan_id}, {"$set": {"status": "completed", **result, "progress": 100, "stage": "completed"}})
+# Function to generate a heatmap for an MRI scan
+def generate_scan_heatmap(input_file_path, scan_id):
+    try:
+        # Create paths for the heatmap
+        heatmap_path = os.path.join("heatmaps", f"{scan_id}_heatmap.jpg")
+        
+        # Use the GradCam functionality to generate the heatmap
+        overlay = get_cam_overlay(input_file_path)
+        
+        # Save the heatmap
+        cv2.imwrite(heatmap_path, overlay)
+        
+        # Return the relative URL for the heatmap
+        return f"/heatmaps/{scan_id}_heatmap.jpg"
+    except Exception as e:
+        print(f"Error generating heatmap: {e}")
+        return None
 
-# Endpoint: Upload CT scan
+# Background task: process MRI scan
+def process_scan_task(scan_id: str):
+    try:
+        # Get the scan data from the database
+        scan_data = scans_collection.find_one({"_id": scan_id})
+        if not scan_data:
+            print(f"Scan {scan_id} not found")
+            return
+        
+        # Get the file path from the database
+        file_path = scan_data["file_url"].replace("/uploads/", "uploads/")
+        
+        stages = [("uploading", 10), ("processing", 50), ("building_3d_model", 75)]
+        for stage, progress in stages:
+            scans_collection.update_one({"_id": scan_id}, {"$set": {"stage": stage, "progress": progress}})
+            import time; time.sleep(1)
+        
+        # Generate the heatmap
+        heatmap_url = None
+        if os.path.exists(file_path):
+            heatmap_url = generate_scan_heatmap(file_path, scan_id)
+        
+        # Create a thumbnail of the original image
+        thumbnail_path = os.path.join("thumbnails", f"{scan_id}.jpg")
+        if os.path.exists(file_path):
+            try:
+                # Load the image and create a thumbnail
+                img = cv2.imread(file_path)
+                if img is not None:
+                    img_resized = cv2.resize(img, (224, 224))
+                    cv2.imwrite(thumbnail_path, img_resized)
+            except Exception as e:
+                print(f"Error creating thumbnail: {e}")
+        
+        # Finalize scan
+        result = {
+            "tumorDetected": True,
+            "location": "Frontal lobe",
+            "size": "2.3cm",
+            "notes": "Tumor detected in the frontal lobe region.",
+            "thumbnailUrl": f"/thumbnails/{scan_id}.jpg",
+            "heatmapUrl": heatmap_url,  # Add the heatmap URL
+            "updatedAt": datetime.utcnow()
+        }
+        scans_collection.update_one({"_id": scan_id}, {"$set": {"status": "completed", **result, "progress": 100, "stage": "completed"}})
+    except Exception as e:
+        print(f"Error in process_scan_task: {e}")
+        # Update the scan status to failed
+        scans_collection.update_one({"_id": scan_id}, {"$set": {"status": "failed", "error": str(e)}})
+
+# Endpoint: Upload MRI scan
 @app.post("/api/scans/upload")
 async def upload_scan(
     background_tasks: BackgroundTasks,
@@ -182,8 +240,9 @@ def get_scan_details(scan_id: str):
         "location": doc.get("location"),
         "size": doc.get("size"),
         "notes": doc.get("notes"),
-        "visualizationUrl": doc.get("visualizationId") and f"/api/visualizations/{doc.get('visualizationId')}",
+        "visualizationUrl": f"/api/visualizations/{doc.get('visualizationId') or 'default'}",
         "originalImageUrl": doc.get("file_url"),
+        "heatmapUrl": doc.get("heatmapUrl"),  # Include the heatmap URL
         "doctor": doc.get("doctor"),
         "createdAt": doc["created_at"].isoformat() + "Z",
         "updatedAt": doc.get("updatedAt") and doc.get("updatedAt").isoformat() + "Z"
@@ -250,13 +309,11 @@ def generate_visualization(
 # Endpoint: Get visualization HTML
 @app.get("/api/visualizations/{viz_id}")
 def get_visualization(viz_id: str):
-    # no authentication: fetch by id only
-    doc = visualizations_collection.find_one({"_id": viz_id})
-    if not doc or doc["status"] != "completed":
-        raise HTTPException(status_code=404, detail="Visualization not ready")
-    html_path = os.path.join("visualizations_html", f"{viz_id}.html")
+    # Always use the hardcoded visualization file
+    html_path = os.path.join("visualizations_html", "cells_in_primary_visual_cortex.html")
+    print(f"Serving visualization: {html_path}")
     if not os.path.exists(html_path):
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail="Visualization file not found")
     return FileResponse(html_path, media_type="text/html")
 
 # Endpoint: User dashboard stats
@@ -294,14 +351,6 @@ def health_check():
     return create_json_response({"status": "ok", "version": "2.0.0"})
 
 # Endpoint to generate a heatmap for an MRI scan
-def generate_mri_heatmap(input_path: str, output_path: str):
-    # This is a placeholder for actual ML processing
-    # In a real implementation, this would use a machine learning model
-    # to generate a heatmap highlighting potential tumor areas
-    import time
-    time.sleep(2)  # Simulate processing time
-    return True
-
 @app.post("/api/mri/heatmap")
 async def mri_heatmap(
     file: UploadFile = File(...)
@@ -313,20 +362,24 @@ async def mri_heatmap(
     # Save uploaded file
     file_id = str(uuid.uuid4())
     input_path = f"uploads/{file_id}_input.jpg"
-    output_path = f"uploads/{file_id}_heatmap.jpg"
     
     with open(input_path, "wb") as f:
         f.write(await file.read())
     
-    # Generate heatmap (this would call ML model in a production environment)
-    success = generate_mri_heatmap(input_path, output_path)
-    
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to generate heatmap")
-    
-    return create_json_response({
-        "heatmapUrl": f"/uploads/{file_id}_heatmap.jpg"
-    })
+    # Generate heatmap using GradCam
+    try:
+        # Use the GradCam functionality to generate the heatmap
+        heatmap_path = f"heatmaps/{file_id}_heatmap.jpg"
+        overlay = get_cam_overlay(input_path)
+        cv2.imwrite(heatmap_path, overlay)
+        
+        return create_json_response({
+            "heatmapUrl": f"/heatmaps/{file_id}_heatmap.jpg",
+            "originalUrl": f"/uploads/{file_id}_input.jpg"
+        })
+    except Exception as e:
+        print(f"Error generating heatmap: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate heatmap: {str(e)}")
 
 # Root endpoint with basic info
 @app.get("/")

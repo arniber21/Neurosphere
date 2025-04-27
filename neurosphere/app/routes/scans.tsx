@@ -83,7 +83,7 @@ export default function Scans() {
             <Button>Upload New Scan</Button>
           </Link>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3 items-center">
           <div className="relative w-full sm:w-[300px]">
             <Input
@@ -92,34 +92,34 @@ export default function Scans() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full"
             />
-          </div>
+              </div>
           
           <div className="flex flex-wrap gap-2">
-            <Button 
+                <Button 
               variant={statusFilter === null ? "default" : "outline"}
-              size="sm"
+                  size="sm"
               onClick={() => handleStatusFilterChange(null)}
-            >
-              All
-            </Button>
-            <Button 
+                >
+                  All
+                </Button>
+                <Button 
               variant={statusFilter === "completed" ? "default" : "outline"}
-              size="sm"
+                  size="sm"
               onClick={() => handleStatusFilterChange("completed")}
-            >
-              Completed
-            </Button>
-            <Button 
+                >
+                  Completed
+                </Button>
+                <Button 
               variant={statusFilter === "processing" ? "default" : "outline"}
-              size="sm"
+                  size="sm"
               onClick={() => handleStatusFilterChange("processing")}
-            >
-              Processing
-            </Button>
-          </div>
-        </div>
+                >
+                  Processing
+                </Button>
+              </div>
+            </div>
         
-        {isLoading ? (
+            {isLoading ? (
           <div className="flex items-center justify-center p-12">
             <div className="text-center">
               <div className="text-lg font-medium">Loading scans...</div>
@@ -132,7 +132,7 @@ export default function Scans() {
               Retry
             </Button>
           </div>
-        ) : filteredScans.length === 0 ? (
+            ) : filteredScans.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium">No scans found</h3>
             <p className="text-muted-foreground mt-1">
@@ -145,11 +145,11 @@ export default function Scans() {
                 <Button className="mt-4">Upload New Scan</Button>
               </Link>
             )}
-          </div>
-        ) : (
+              </div>
+            ) : (
           <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredScans.map((scan) => (
+                      {filteredScans.map((scan) => (
                 <Link to={`/scans/${scan.id}`} key={scan.id}>
                   <Card className="hover:bg-muted/50 transition-colors">
                     <CardContent className="p-5">
@@ -180,7 +180,7 @@ export default function Scans() {
                             }`}
                           />
                           <span className="text-xs text-muted-foreground capitalize">
-                            {scan.status}
+                              {scan.status}
                           </span>
                         </div>
                       </div>
@@ -199,7 +199,7 @@ export default function Scans() {
                       )}
                     </CardContent>
                   </Card>
-                </Link>
+                            </Link>
               ))}
             </div>
             
