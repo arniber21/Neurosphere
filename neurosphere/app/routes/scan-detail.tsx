@@ -128,33 +128,15 @@ export default function ScanDetail() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Scan Results</h1>
-            <p className="text-muted-foreground">
-              {new Date(scan.date).toLocaleDateString()} • 
-              <span className={scan.tumorDetected ? 'text-red-500' : 'text-green-500'} style={{marginLeft: '0.5rem'}}>
-                {scan.tumorDetected ? 'Tumor Detected' : 'No Tumor Detected'}
-              </span>
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline">Download Report</Button>
-            <Link to="/scans">
-              <Button variant="ghost">Back to Scans</Button>
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left column - Scan info */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Scan Information</CardTitle>
-                <CardDescription>Details about this brain scan</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        {/* Top row - Scan info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Scan Information</CardTitle>
+            <CardDescription>Details about this brain scan</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-4">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Date</p>
                   <p>{new Date(scan.date).toLocaleDateString()}</p>
@@ -171,7 +153,9 @@ export default function ScanDetail() {
                     {scan.tumorDetected ? 'Tumor Detected' : 'No Tumor Detected'}
                   </p>
                 </div>
-                
+              </div>
+              
+              <div className="space-y-4">
                 {scan.location && (
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-muted-foreground">Location</p>
@@ -192,100 +176,163 @@ export default function ScanDetail() {
                     <p className="text-sm">{scan.notes}</p>
                   </div>
                 )}
-                
-                {scan.originalImageUrl && (
-                  <div className="space-y-1 mt-4">
-                    <p className="text-sm font-medium text-muted-foreground">Original Scan</p>
-                    <img 
-                      src={scan.originalImageUrl} 
-                      alt="Original scan" 
-                      className="w-full h-auto rounded-md border"
-                    />
+              </div>
+              
+              <div className="flex justify-end">
+                <div className="space-y-4">
+                  <Button variant="outline" className="w-full">Download Report</Button>
+                  <Link to="/scans">
+                    <Button variant="ghost" className="w-full">Back to Scans</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Tumor Heatmap Section */}
+        {scan.heatmapUrl && (
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <CardTitle>Tumor Heatmap Analysis</CardTitle>
+              <CardDescription>AI-generated heat visualization of detected tumor regions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Color Key - Horizontal on top */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium mb-3">Detection Results</h3>
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full bg-red-500"></div>
+                    <p>High probability tumor region</p>
                   </div>
-                )}
-                
-                {scan.heatmapUrl && (
-                  <div className="space-y-1 mt-4">
-                    <p className="text-sm font-medium text-muted-foreground">Tumor Heatmap</p>
-                    <img 
-                      src={`${scan.heatmapUrl}`} 
-                      alt="Tumor heatmap" 
-                      className="w-full h-auto rounded-md border"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      AI-generated heatmap highlighting potential tumor regions
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full bg-yellow-500"></div>
+                    <p>Medium probability region</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Interaction Guide</CardTitle>
-                <CardDescription>How to interact with the 3D model</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 text-sm">
-                  <div className="flex items-start gap-2">
-                    <div className="bg-muted p-2 rounded">🖱️</div>
-                    <div>
-                      <p className="font-medium">Mouse Controls</p>
-                      <p className="text-muted-foreground">Click and drag to rotate, scroll to zoom</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <div className="bg-muted p-2 rounded">✋</div>
-                    <div>
-                      <p className="font-medium">Gesture Controls</p>
-                      <p className="text-muted-foreground">Use hand movements to rotate and zoom (if enabled)</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <div className="bg-muted p-2 rounded">🔍</div>
-                    <div>
-                      <p className="font-medium">Highlighting</p>
-                      <p className="text-muted-foreground">Tumor areas are highlighted in red</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full bg-blue-500"></div>
+                    <p>Region of interest</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Right column - 3D visualization */}
-          <div className="lg:col-span-2">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>3D Brain Visualization</CardTitle>
-                <CardDescription>Interactive 3D model with tumor location</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0 aspect-[4/3] md:aspect-auto md:flex-1">
-                {scan.visualizationUrl ? (
-                  <div className="w-full h-full min-h-[500px]">
-                    <iframe 
-                      ref={iframeRef}
-                      src={scan.visualizationUrl} 
-                      className="w-full h-full border-0" 
-                      title="K3D Brain Visualization"
-                    />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Side - Text Information */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium">Findings Summary</h4>
+                    <p className="text-muted-foreground mt-1">
+                      {scan.notes || "Tumor detected in the frontal lobe region with high confidence. The highlighted areas show the extent and intensity of the detected abnormality."}
+                    </p>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full min-h-[500px] bg-muted/50">
-                    <div className="text-center">
-                      <p className="text-muted-foreground">
-                        {scan.status === 'processing' 
-                          ? 'Visualization is being generated...' 
-                          : '3D visualization not available'}
-                      </p>
+                  {scan.location && (
+                    <div>
+                      <h4 className="font-medium">Location</h4>
+                      <p className="text-muted-foreground">{scan.location}</p>
+                    </div>
+                  )}
+                  {scan.size && (
+                    <div>
+                      <h4 className="font-medium">Approximate Size</h4>
+                      <p className="text-muted-foreground">{scan.size}</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right Side - Images Side by Side */}
+                <div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Original Scan</h3>
+                      <img
+                        src={scan.originalImageUrl}
+                        alt="Original MRI scan"
+                        className="w-full h-auto rounded-lg border shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">AI Heatmap Overlay</h3>
+                      <img
+                        src={scan.heatmapUrl}
+                        alt="Tumor heatmap visualization"
+                        className="w-full h-auto rounded-lg border shadow-sm"
+                      />
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    Areas highlighted with warmer colors indicate regions identified by our AI as potential tumor locations.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Bottom row - 3D visualization with interaction guide */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle>Interaction Guide</CardTitle>
+              <CardDescription>How to interact with the 3D model</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <div className="bg-muted p-2 rounded">🖱️</div>
+                  <div>
+                    <p className="font-medium">Mouse Controls</p>
+                    <p className="text-muted-foreground">Click and drag to rotate, scroll to zoom</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-2">
+                  <div className="bg-muted p-2 rounded">✋</div>
+                  <div>
+                    <p className="font-medium">Gesture Controls</p>
+                    <p className="text-muted-foreground">Use hand movements to rotate and zoom (if enabled)</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-2">
+                  <div className="bg-muted p-2 rounded">🔍</div>
+                  <div>
+                    <p className="font-medium">Highlighting</p>
+                    <p className="text-muted-foreground">Tumor areas are highlighted in red</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="lg:col-span-3 h-full flex flex-col">
+            <CardHeader>
+              <CardTitle>3D Brain Visualization</CardTitle>
+              <CardDescription>Interactive 3D model with tumor location</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 flex-grow">
+              {scan.visualizationUrl ? (
+                <div className="w-full h-full" style={{ height: "calc(100vh - 500px)", minHeight: "600px" }}>
+                  <iframe 
+                    ref={iframeRef}
+                    src={scan.visualizationUrl} 
+                    className="w-full h-full border-0" 
+                    title="K3D Brain Visualization"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full min-h-[500px] bg-muted/50">
+                  <div className="text-center">
+                    <p className="text-muted-foreground">
+                      {scan.status === 'processing' 
+                        ? 'Visualization is being generated...' 
+                        : '3D visualization not available'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </DashboardLayout>

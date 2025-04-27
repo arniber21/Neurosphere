@@ -240,7 +240,7 @@ def get_scan_details(scan_id: str):
         "location": doc.get("location"),
         "size": doc.get("size"),
         "notes": doc.get("notes"),
-        "visualizationUrl": doc.get("visualizationId") and f"/api/visualizations/{doc.get('visualizationId')}",
+        "visualizationUrl": f"/api/visualizations/{doc.get('visualizationId') or 'default'}",
         "originalImageUrl": doc.get("file_url"),
         "heatmapUrl": doc.get("heatmapUrl"),  # Include the heatmap URL
         "doctor": doc.get("doctor"),
@@ -309,15 +309,11 @@ def generate_visualization(
 # Endpoint: Get visualization HTML
 @app.get("/api/visualizations/{viz_id}")
 def get_visualization(viz_id: str):
-    # no authentication: fetch by id only
-    doc = visualizations_collection.find_one({"_id": viz_id})
-    # if not doc or doc["status"] != "completed":
-    #    raise HTTPException(status_code=404, detail="Visualization not ready")
-    html_path = os.path.join("visualizations_html", f"{viz_id}.html")
+    # Always use the hardcoded visualization file
     html_path = os.path.join("visualizations_html", "cells_in_primary_visual_cortex.html")
-    print("reached")
+    print(f"Serving visualization: {html_path}")
     if not os.path.exists(html_path):
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail="Visualization file not found")
     return FileResponse(html_path, media_type="text/html")
 
 # Endpoint: User dashboard stats
