@@ -34,9 +34,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-muted"
+                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-all duration-300 transform hover:scale-105 hover:bg-pink-500 hover:text-white"
                 >
-                  <span className="mr-3 h-6 w-6 flex items-center justify-center">{item.icon}</span>
+                  <span className="mr-3 h-6 w-6 flex items-center justify-center transition-colors duration-300 group-hover:text-white">
+                    {item.icon}
+                  </span>
                   {item.name}
                 </Link>
               ))}
@@ -70,7 +72,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className="p-1 rounded-md text-xl"
+                    className="p-1 rounded-md text-xl transition-all duration-300 transform hover:scale-105 hover:bg-pink-500 hover:text-white"
                   >
                     {item.icon}
                   </Link>
@@ -92,4 +94,4 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   )
-} 
+}
